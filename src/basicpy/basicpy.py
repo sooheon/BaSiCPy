@@ -177,6 +177,7 @@ class BaSiC(BaseModel):
     _sparse_cost_darkfield: float = PrivateAttr(None)
 
     _settings_fname = "settings.json"
+    _baseline_fname = "baseline.npy"
     _profiles_fname = "profiles.npy"
 
     class Config:
@@ -785,6 +786,8 @@ class BaSiC(BaseModel):
             # see pydantic docs for output options
             fp.write(self.json())
 
+        np.save(path / self._baseline_fname, self.baseline)
+
         # NOTE emit warning if profiles are all zeros? fit probably not run
         # save profiles
         profiles = np.array((self.flatfield, self.darkfield))
@@ -800,6 +803,8 @@ class BaSiC(BaseModel):
 
         with open(path / cls._settings_fname) as fp:
             model = json.load(fp)
+
+        model["baseline"] = np.load(path / cls._baseline_fname)
 
         profiles = np.load(path / cls._profiles_fname)
         model["flatfield"] = profiles[0]
